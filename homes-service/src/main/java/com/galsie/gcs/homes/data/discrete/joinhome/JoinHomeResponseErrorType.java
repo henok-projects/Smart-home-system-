@@ -1,0 +1,6 @@
+package com.galsie.gcs.homes.data.discrete.joinhome;
+
+//	new code
+public enum JoinHomeResponseErrorType {
+    INVALID_INVITE_CODE, INVITATION_EXPIRED, INVITATION_CANCELLED, NO_PERMISSION, USER_ALREADY_PART_OF_HOME, USER_ALREADY_JOINED_THEN_LEFT_THROUGH_THIS_INVITE, HOME_IS_INACTIVE;
+}

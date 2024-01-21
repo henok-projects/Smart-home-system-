@@ -1,0 +1,36 @@
+# Start with the RabbitMQ base
+FROM rabbitmq:3.12-management
+
+LABEL authors="Galsie"
+
+# Install Java and MySQL on top of the RabbitMQ base image
+RUN apt-get update && apt-get install -y mysql-server-8.0 openjdk-17-jre openjdk-17-jdk
+
+# Copy your script and SQL file into the container.
+# Make sure the db_bootstrap.sql file is within the Docker build context.
+COPY db_bootstrap.sql /
+COPY docker/bootstrap_users_and_vhosts_and_run_apps.sh /
+COPY docker/entrypoint.sh /
+RUN chmod +x /bootstrap_users_and_vhosts_and_run_apps.sh
+RUN chmod +x /entrypoint.sh
+
+ENV RABBITMQ_NODENAME=galsie-node1@localhost
+
+# Copy your JAR files into the container.
+# Make sure all JAR files are within the Docker build context.
+COPY config/target/config-0.0.1-SNAPSHOT.jar /
+COPY eureka/target/eureka-0.0.1-SNAPSHOT.jar /
+COPY gcs-sentry-service/target/gcs-sentry-service-0.0.1-SNAPSHOT.jar /
+COPY resources-service/target/resources-service-0.0.1-SNAPSHOT.jar /
+COPY continuous-service/target/continuous-service-0.0.1-SNAPSHOT.jar /
+COPY gateway/target/gateway-0.0.1-SNAPSHOT.jar /
+COPY homes-datawarehouse-service/target/homes-datawarehouse-service-0.0.1-SNAPSHOT.jar /
+COPY email-service/target/email-service-0.0.1-SNAPSHOT.jar /
+COPY users-service/target/users-service-0.0.1-SNAPSHOT.jar /
+COPY homes-service/target/homes-service-0.0.1-SNAPSHOT.jar /
+
+# Expose necessary ports for your applications
+EXPOSE 60131 60132 60133 60134 60135 60136
+
+# Set the custom entrypoint script as the default command
+CMD ["/bin/bash", "-c", "./entrypoint.sh"]

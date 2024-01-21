@@ -1,0 +1,36 @@
+server:
+  port: ${PORT:0}
+galsie:
+  microservice:
+    name: "sms-service"
+    password: "galsie123" # password in GCS-Sentry
+    instance-unique-id: "0"
+    version: "0.0.1"
+    version-required: true
+  sms:
+    phone-numbers: "+14173902523,+15072169034"  #expects a comma separated list of phone numbers e.g. +14173902523,+14173902523
+    twilio:
+      sid: "AC0aedb5e1ae22d9e4cb50745256fa85ea"
+      token: "545114b11178c5ed52788bf4f66c5c02"
+spring:
+  application:
+    name: "sms-service"
+  config:
+    import: "configserver:http://${CONFIG_HOST:localhost}:4060"
+  jpa:
+    generate-ddl: true
+  datasource:
+    url: 'jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/galSmsDb'
+    username: "${DB_UN:galsie}"
+    password: "${DB_PASS:galsie123}"
+    #driver-class-name: 'com.mysql.jdbc.Driver' Warning popped out indicating this is Unnecessary
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: "galSmsService"
+    password: "galsie123"
+    virtual-host: "/galsie-development"
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: "http://${EUREKA_HOST:localhost}:8761/eureka/"

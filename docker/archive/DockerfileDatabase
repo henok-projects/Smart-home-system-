@@ -1,0 +1,4 @@
+FROM mysql:latest
+LABEL authors="Galsie"
+
+COPY ../../db_bootstrap.sql /docker-entrypoint-initdb.d/

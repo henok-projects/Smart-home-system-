@@ -1,0 +1,3 @@
+Galsie's Account Verification \n
+Hello, please verify account with otp below: \n
+%otp_code%

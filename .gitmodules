@@ -1,0 +1,3 @@
+[submodule "galsie-lib-java"]
+	path = galsie-lib-java
+	url = git@github.com:Galsie/galsie-lib-java.git

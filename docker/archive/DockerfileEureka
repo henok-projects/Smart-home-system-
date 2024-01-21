@@ -1,0 +1,14 @@
+FROM openjdk:17
+LABEL authors="Galsie"
+
+# Set the working directory
+WORKDIR /app
+
+# Copy your JAR files to the image
+COPY eureka/target/eureka-0.0.1-SNAPSHOT.jar /app
+
+
+# Expose the ports for your applications
+EXPOSE 8761
+
+CMD ["java", "-jar", "eureka-0.0.1-SNAPSHOT.jar"]

@@ -1,0 +1,24 @@
+server:
+  port: ${PORT:0}
+galsie:
+  microservice:
+    name: "homes-data-warehouse-service"
+    password: "galsie123" # password in GCS-Sentry
+    version: "0.0.1"
+    version-required: true
+spring:
+  application:
+    name: "homes-data-warehouse-service"
+  config:
+    import: "configserver:http://${CONFIG_HOST:localhost}:4060"
+  jpa:
+    generate-ddl: true
+  datasource:
+    url: 'jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/galHomesDb' # HomesDataWarehouse depends on homes-data-common and as an architectural choice must use the same database as homes-service
+    username: "${DB_UN:galsie}"
+    password: "${DB_PASS:galsie123}"
+    #driver-class-name: 'com.mysql.jdbc.Driver' Warning popped out indicating this is Unnecessary
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: "http://${EUREKA_HOST:localhost}:8761/eureka/"

@@ -1,0 +1,6 @@
+package com.galsie.gcs.homes.data.discrete.leavehome;
+
+
+public enum LeaveHomeResponseErrorType {
+     NEED_TO_SELECT_A_NEW_HOUSEMASTER,HOME_WILL_BE_DISBANDED, HOME_WILL_BE_DELETED,SOMEONE_ELSE_WILL_BECOME_THE_HOUSEMASTER, SOME_OPERATORS_WILL_NO_LONGER_WORK
+}

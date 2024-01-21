@@ -1,0 +1,231 @@
+version: '3'
+
+
+services:
+  database:
+    image: galsie/gcs-database:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileDatabase
+    container_name: gcs-database
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=galsie
+      - MYSQL_USER=galsie
+      - MYSQL_PASSWORD=galsie123
+
+  rabbitmq:
+    image: galsie/gcs-rabbitmq:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileRabbitMQ
+    container_name: gcs-rabbitMQ
+
+
+  config:
+    image: galsie/gcs-config:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileConfig
+    ports:
+      - "4060:4060"
+    container_name: gcs-config
+
+  eureka:
+    image: galsie/gcs-eureka:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileEureka
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=3306
+    ports:
+      - "8761:8671"
+    container_name: gcs-eureka
+
+  sentry:
+    image: galsie/gcs-sentry:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileSentry
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=3306
+      - CONFIG_HOST=config
+      - EUREKA_HOST=eureka
+      - RABBITMQ_HOST=rabbitmq
+      - DB_UN=root
+      - DB_PASS=root
+      - PORT=60131
+    depends_on:
+      - database
+      - rabbitmq
+      - config
+      - eureka
+    ports:
+      - "60131:60131"
+    restart: on-failure
+    container_name: gcs-sentry
+
+  resources:
+    image: galsie/gcs-resources-service:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileResources
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=3306
+      - CONFIG_HOST=config
+      - EUREKA_HOST=eureka
+      - RABBITMQ_HOST=rabbitmq
+      - DB_UN=root
+      - DB_PASS=root
+      - PORT=60132
+    depends_on:
+      - database
+      - rabbitmq
+      - config
+      - eureka
+      - sentry
+    ports:
+      - "60132:60132"
+    restart: on-failure
+    container_name: gcs-resources-service
+
+  continuous:
+    image: galsie/gcs-continuous-service:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileContinuous
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=3306
+      - CONFIG_HOST=config
+      - EUREKA_HOST=eureka
+      - RABBITMQ_HOST=rabbitmq
+      - DB_UN=root
+      - DB_PASS=root
+    depends_on:
+      - database
+      - rabbitmq
+      - config
+      - eureka
+      - resources
+    ports:
+      - "60420:60420"
+    restart: on-failure
+    container_name: gcs-continuous-service
+
+  gateway:
+    image: galsie/gcs-gateway-service:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileGateway
+    environment:
+      - EUREKA_HOST=eureka
+    depends_on:
+      - eureka
+    ports:
+      - "4062:4062"
+    restart: on-failure
+    container_name: gcs-gateway-service
+
+  homes_data_warehouse:
+    image: galsie/gcs-homes-data-warehouse:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileHomeDataWarehouse
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=3306
+      - CONFIG_HOST=config
+      - EUREKA_HOST=eureka
+      - DB_UN=root
+      - DB_PASS=root
+      - PORT=60133
+    depends_on:
+      - database
+      - rabbitmq
+      - config
+      - eureka
+      - resources
+    ports:
+      - "60133:60133"
+    restart: on-failure
+    container_name: gcs-homes-data-warehouse
+
+  homes:
+    image: galsie/gcs-homes-service:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileHomes
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=3306
+      - CONFIG_HOST=config
+      - EUREKA_HOST=eureka
+      - RABBITMQ_HOST=rabbitmq
+      - DB_UN=root
+      - DB_PASS=root
+      - PORT=60134
+    depends_on:
+      - database
+      - rabbitmq
+      - config
+      - eureka
+      - resources
+      - homes_data_warehouse
+    ports:
+      - "60134:60134"
+    restart: on-failure
+    container_name: gcs-homes-service
+
+  email:
+    image: galsie/gcs-email-service:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileEmail
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=3306
+      - CONFIG_HOST=config
+      - EUREKA_HOST=eureka
+      - RABBITMQ_HOST=rabbitmq
+      - DB_UN=root
+      - DB_PASS=root
+      - PORT=60135
+    depends_on:
+      - database
+      - rabbitmq
+      - config
+      - eureka
+      - resources
+    ports:
+      - "60135:60135"
+    restart: on-failure
+    container_name: gcs-email-service
+
+  users:
+    image: galsie/gcs-users-service:latest
+    build:
+      context: ../..
+      dockerfile: DockerfileUsers
+    environment:
+      - DATABASE_HOST=database
+      - DATABASE_PORT=3306
+      - CONFIG_HOST=config
+      - EUREKA_HOST=eureka
+      - RABBITMQ_HOST=rabbitmq
+      - DB_UN=root
+      - DB_PASS=root
+      - PORT=60136
+    depends_on:
+      - database
+      - rabbitmq
+      - config
+      - eureka
+      - resources
+    ports:
+      - "60136:60136"
+    restart: on-failure
+    container_name: gcs-users-service

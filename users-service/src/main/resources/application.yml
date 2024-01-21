@@ -1,0 +1,38 @@
+server:
+  port: ${PORT:57969} # CHANGE TO 0
+
+galsie:
+  microservice: # configuration required by microservice-common (you can expect that all microservices have these configuration keys)
+    name: "users-service"
+    instance-unique-id: "0"
+    password: "galsie123" # password in GCS-Sentry
+    version: "0.0.1"
+    version-required: true
+    security:
+      paths-requiring-user-auth: /*authenticated/.* # to add paths, comma seperate (can use space after comma)
+  thisservice: # configuration required by this service
+    userauth:
+      max-session-inactive-time-in-seconds: 3600 # 1 hour
+
+spring:
+  application:
+    name: "users-service"
+  config:
+    import: "configserver:http://${CONFIG_HOST:localhost}:4060"
+  jpa:
+    generate-ddl: true
+  datasource:
+    url: 'jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/galUsersDb'
+    username: "${DB_UN:galsie}"
+    password: "${DB_PASS:galsie123}"
+    #driver-class-name: 'com.mysql.jdbc.Driver' Warning popped out indicating this is Unnecessary
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: "galUsersService"
+    password: "galsie123"
+    virtual-host: "/galsie-development"
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: "http://${EUREKA_HOST:localhost}:8761/eureka/"

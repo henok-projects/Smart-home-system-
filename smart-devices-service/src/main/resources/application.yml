@@ -1,0 +1,6 @@
+galsie:
+  microservice:
+    name: "smart-devices-service"
+    password: "galsie123" # password in GCS-Sentry
+    version: "0.0.1"
+    version-required: true

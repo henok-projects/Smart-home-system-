@@ -1,0 +1,38 @@
+server:
+  port: ${PORT:0}
+logging:
+  path: './out/logs'
+galsie:
+  microservice:
+    name: "homes-service"
+    instance-unique-id: "0"
+    password: "galsie123" # password in GCS-Sentry
+    version: "0.0.1"
+    version-required: true
+  home:
+    invites:
+      code-length: 7 # U or Q, then 6 characters (Used to generate the code)
+      code-regex: "^[UQ][A-Za-z0-9]{6}$" # used to match the code
+      max-regeneration-retries: 500 # If the code already exists, we regenerate
+spring:
+  application:
+    name: "homes-service"
+  config:
+    import: "configserver:http://${CONFIG_HOST:localhost}:4060"
+  jpa:
+    generate-ddl: true
+  datasource:
+    url: 'jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/galHomesDb'
+    username: "${DB_UN:galsie}"
+    password: "${DB_PASS:galsie123}"
+    #driver-class-name: 'com.mysql.jdbc.Driver' Warning popped out indicating this is Unnecessary
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: "galHomesService"
+    password: "galsie123"
+    virtual-host: "/galsie-development"
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: "http://${EUREKA_HOST:localhost}:8761/eureka/"

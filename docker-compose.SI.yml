@@ -1,0 +1,15 @@
+version: '3'
+
+
+services:
+  allservices:
+    image: galsie/galcloud-allservices:latest
+    build:
+      dockerfile: DockerfileAllServices
+    ports:
+      - "60142:60132"
+      - "60143:60133"
+      - "60144:60134"
+      - "60145:60135"
+      - "60146:60136"
+    container_name: gcs-all-services

@@ -1,0 +1,10 @@
+FROM rabbitmq:management
+LABEL authors="Galsie"
+
+COPY ../../rabbitmq/scripts/docker/bootstrap_users_and_vhosts.sh /
+
+RUN chmod +x /bootstrap_users_and_vhosts.sh
+
+ENV RABBITMQ_NODENAME=galsie-node1@localhost
+
+CMD ["./bootstrap_users_and_vhosts.sh"]

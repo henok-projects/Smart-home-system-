@@ -1,0 +1,14 @@
+FROM openjdk:17
+LABEL authors="Galsie"
+
+# Set the working directory
+WORKDIR /app
+
+
+COPY ../../gateway/target/gateway-0.0.1-SNAPSHOT.jar /app
+
+# Expose the ports for your applications
+EXPOSE 4062
+
+
+CMD ["java", "-jar", "gateway-0.0.1-SNAPSHOT.jar"]

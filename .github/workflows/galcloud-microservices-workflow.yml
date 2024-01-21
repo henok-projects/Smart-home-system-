@@ -1,0 +1,166 @@
+name: Galsie Build
+
+on:
+  push:
+    branches:
+      - develop
+      - update/gcsrequest-testing-and-fixing
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+
+    steps:
+      - name: Check Linux Version
+        run: |
+            echo "Runner OS: ${{ runner.os }}"
+            cat /etc/os-release
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17.0.7
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Set up MySQL
+        run: |
+            sudo /etc/init.d/mysql start
+            mysql -h localhost -P 3306 -u root -proot < db_bootstrap.sql
+
+      - name: Set Up Java 17 runtime environment
+        run: |
+            sudo apt update
+            sudo apt install openjdk-17-jre
+            sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+
+      - name: Add Erlang Solutions repository and import GPG key Using Focal
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnupg
+          wget https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc
+          sudo apt-key add erlang_solutions.asc
+          echo "deb https://packages.erlang-solutions.com/ubuntu focal contrib" | sudo tee /etc/apt/sources.list.d/erlang-solutions.list
+          sudo apt-get update
+
+      - name: Install Erlang/OTP 26.0
+        run: |
+          sudo apt-get install -y erlang
+
+      - name: Install RabbitMQ 3.12.8
+        run: |
+          sudo apt-get -y install wget
+          wget https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.12.8/rabbitmq-server_3.12.8-1_all.deb
+          sudo dpkg -i rabbitmq-server_3.12.8-1_all.deb
+          rm rabbitmq-server_3.12.8-1_all.deb
+
+      - name: Disable RabbitMQ service
+        run: |
+          sudo systemctl disable rabbitmq-server
+
+      - name: Bootstrap RabbitMQ
+        run: |
+          cd rabbitmq/scripts/ubuntu
+          chmod +x bootstrap-users-and-vhosts.sh
+          chmod +x start-rabbitmq-server.sh
+          sudo ./start-rabbitmq-server.sh
+          sudo ./bootstrap-users-and-vhosts.sh
+
+      - name: Setup Gal Assets Directory
+        run: | # TODO: perhaps use relative path
+          sudo mkdir -p /gcs_generated_resources
+          sudo chown -R $USER: /gcs_generated_resources
+          chmod -R 777 /gcs_generated_resources
+          sudo mkdir -p /gcs_generated_resources/GalAssets
+          sudo chown -R $USER: /gcs_generated_resources/GalAssets
+          chmod -R 777 /gcs_generated_resources/GalAssets
+          ls
+
+      - name: Setup Gal Lib
+        uses: actions/checkout@v2
+        with:
+          repository: Galsie/galsie-lib-java
+          path: gal-lib/galsie-lib-java
+          token: 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
+          ref: feature/gcsrequest-testing
+
+      - name: Build and Install Version Control
+        run: mvn clean install -f version-control/pom.xml
+
+      - name: Build and Install Galsie Lib
+        run: mvn clean install -f gal-lib/galsie-lib-java/pom.xml
+
+      - name: Build and Install Service Utilities Library
+        run: mvn clean install -f service-utils-library/pom.xml
+
+      - name: Build and Install Microservice Common
+        run: mvn clean install -f microservice-common/pom.xml
+
+      - name: Build and Install Homes Common Data
+        run: mvn clean install -f homes-common-data/pom.xml
+
+      - name: Build and Run Config Service
+        run: |
+          mvn clean install --file config/pom.xml
+          nohup java -jar ~/.m2/repository/com/galsie/gcs/config/0.0.1-SNAPSHOT/config-0.0.1-SNAPSHOT.jar output.log 2>&1 &
+
+      - name: Build and Run Eureka Service
+        run: |
+          mvn clean install --file eureka/pom.xml
+          nohup java -jar ~/.m2/repository/com/galsie/gcs/eureka/0.0.1-SNAPSHOT/eureka-0.0.1-SNAPSHOT.jar output1.log 2>&1 &
+
+      - name: Build GCS Sentry Service
+        run: |
+          mvn clean install --file gcs-sentry-service/pom.xml
+          nohup java -jar ~/.m2/repository/com/galsie/gcs/gcs-sentry-service/0.0.1-SNAPSHOT/gcs-sentry-service-0.0.1-SNAPSHOT.jar output2.log 2>&1 &
+
+      - name: Build Resource Service
+        run: |
+          mvn clean install --file resources-service/pom.xml
+          nohup java -jar ~/.m2/repository/com/galsie/gcs/resources-service/0.0.1-SNAPSHOT/resources-service-0.0.1-SNAPSHOT.jar output3.log 2>&1 &
+
+      - name: Build Continuous Service
+        run: mvn clean install --file continuous-service/pom.xml
+
+      - name: Build Gateway Application
+        run: mvn clean install --file gateway/pom.xml
+
+      - name: Build Homes Data Warehouse Service
+        run: mvn clean install --file homes-datawarehouse-service/pom.xml
+
+      - name: Build Email Service Application
+        run: |
+          mvn clean install --file email-service/pom.xml
+          nohup java -jar ~/.m2/repository/com/galsie/gcs/email-service/0.0.1-SNAPSHOT/email-service-0.0.1-SNAPSHOT.jar output4.log 2>&1 &
+
+      - name: Build SMS Service Application
+        run: |
+          mvn clean install --file sms-service/pom.xml
+          nohup java -jar ~/.m2/repository/com/galsie/gcs/sms-service/0.0.1-SNAPSHOT/email-service-0.0.1-SNAPSHOT.jar output4.log 2>&1 &
+
+      - name: Build User Application
+        run: |
+          mvn clean install --file users-service/pom.xml
+          nohup java -jar ~/.m2/repository/com/galsie/gcs/users-service/0.0.1-SNAPSHOT/users-service-0.0.1-SNAPSHOT.jar output5.log 2>&1 &
+
+      - name: Build Homes Service
+        run: mvn clean install --file homes-service/pom.xml
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          username: petergalsie
+          password: D0ckerized1
+
+      - name: Build and push Docker images
+        run: |
+          docker-compose -f docker-compose.SI.yml build
+          docker-compose -f docker-compose.SI.yml push
+

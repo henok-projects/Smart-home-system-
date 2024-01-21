@@ -1,0 +1,33 @@
+
+server:
+  port: 56969
+galsie:
+  microservice:
+    name: "test-service"
+    instance-unique-id: "0"
+    password: "galsie123" # password in GCS-Sentry
+    version: "0.0.1"
+    version-required: true
+spring:
+  application:
+    name: "test-service"
+  config:
+    import: 'configserver:http://localhost:4060'
+  jpa:
+    generate-ddl: true
+  datasource:
+    url: 'jdbc:mysql://localhost:3306/galTestDb'
+    username: 'galsie'
+    password: 'galsie123'
+    #driver-class-name: 'com.mysql.jdbc.Driver' #Warning popped out indicating this is Unnecessary
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: "galTestService"
+    password: "galsie123"
+    virtual-host: "/galsie-development"
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: 'http://localhost:8761/eureka/'

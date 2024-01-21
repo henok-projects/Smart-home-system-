@@ -1,0 +1,44 @@
+out/
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+debug.log
+galsie-lib-java/.idea/
+galsie-lib-java/src/
+galsie-lib-java/target/
+galsie-lib-java/.gitignore
+galsie-lib-java/pom.xml
+galsie-lib-java/README.md
+gcs_generated_resources
+
+.DS_Store

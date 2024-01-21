@@ -1,0 +1,49 @@
+server:
+  port: ${PORT:0}
+galsie:
+  assetsync:
+    page-size: 20 #this is converted to an int
+    file-size: 5242880 #this is converted to a big decimal and represents 5MB i.e 5 * 1024 * 1024
+    delete-synchronization-entities-older-than-days: 5 #To delete asset sync entities older than 5 days
+  scheduled-tasks:
+    clean-up-assetsync-entities-older-than-days-in-milli: 432000000 #5 days in milli 5 * 24 * 60 * 60 * 1000
+  microservice:
+    name: "resources-service"
+    instance-unique-id: "0"
+    password: "galsie123" # password in GCS-Sentry
+    version: "0.0.1"
+    version-required: true
+  resource:
+    galassets:
+      git:
+        localRepositoryLocation: "./gcs_generated_resources/GalAssets"
+        remoteRepositoryURI: "https://github.com/Galsie/GalAssets.git"
+        branchName: "development"
+        username: "olamireDev"
+        pat: "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"
+spring:
+  cache:
+    cache-names: "syncRequests" # Define a cache with the name "syncRequests"
+    caffeine:
+      spec: "maximumSize=500, expireAfterAccess=5d"
+  application:
+    name: "resources-service"
+  config:
+    import: "configserver:http://${CONFIG_HOST:localhost}:4060"
+  jpa:
+    generate-ddl: true
+  datasource:
+    url: "jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/galResourcesDb"
+    username: "${DB_UN:galsie}"
+    password: "${DB_PASS:galsie123}"
+    #driver-class-name: 'com.mysql.jdbc.Driver' Warning popped out indicating this is Unnecessary
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: "galResourcesService"
+    password: "galsie123"
+    virtual-host: "/galsie-development"
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: "http://${EUREKA_HOST:localhost}:8761/eureka/"
